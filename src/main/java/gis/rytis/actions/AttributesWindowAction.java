@@ -12,7 +12,7 @@ public class AttributesWindowAction extends MapAction {
     public static final String TOOL_NAME = "Attributes";
     public static final String TOOL_TIP = "Show features attributes";
     public static final String ICON_IMAGE = null;
-    private final JFrame frame;
+    private final AttributesWindow frame;
 
     public AttributesWindowAction(MapPane mapPane) {
         super.init(mapPane, TOOL_NAME, TOOL_TIP, ICON_IMAGE);
@@ -24,5 +24,6 @@ public class AttributesWindowAction extends MapAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         frame.setVisible(!frame.isVisible());
+        frame.showFeatures();
     }
 }
