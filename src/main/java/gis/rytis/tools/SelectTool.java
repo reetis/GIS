@@ -4,16 +4,12 @@ import gis.rytis.SelectableLayer;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.map.Layer;
-import org.geotools.styling.Style;
 import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.identity.FeatureId;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class SelectTool extends CursorTool {

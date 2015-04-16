@@ -1,13 +1,5 @@
 package gis.rytis;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-
 import org.geotools.data.DataAccess;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -24,6 +16,14 @@ import org.geotools.swing.table.FeatureCollectionTableModel;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AttributesWindow extends JFrame {
     private JComboBox<String> featureTypeCBox;

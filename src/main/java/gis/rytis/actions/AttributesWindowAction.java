@@ -4,7 +4,6 @@ import gis.rytis.AttributesWindow;
 import org.geotools.swing.MapPane;
 import org.geotools.swing.action.MapAction;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class AttributesWindowAction extends MapAction {
