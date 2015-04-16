@@ -36,7 +36,6 @@ public class AttributesWindow extends JFrame {
     private JComboBox<FeatureLayer> layerCBox;
     private JTable table;
     private JTextField text;
-    private JPanel statusBar;
     private JLabel statusText;
     private MapPane mapPane;
 
@@ -96,7 +95,7 @@ public class AttributesWindow extends JFrame {
             }
         });
 
-        statusBar = new JPanel();
+        JPanel statusBar = new JPanel();
         statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
         getContentPane().add(statusBar, BorderLayout.SOUTH);
         statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));

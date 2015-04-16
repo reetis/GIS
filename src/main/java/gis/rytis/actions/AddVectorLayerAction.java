@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class AddVectorLayerAction extends MapAction {
 
-    public static final String TOOL_NAME = "Add Vector Layer";
+    public static final String TOOL_NAME = "Add Layer";
     public static final String TOOL_TIP = "Add Vector Layer";
     public static final String ICON_IMAGE = null;
 

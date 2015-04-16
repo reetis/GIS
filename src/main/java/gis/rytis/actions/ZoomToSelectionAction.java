@@ -10,7 +10,7 @@ import java.awt.event.ActionEvent;
 
 public class ZoomToSelectionAction extends MapAction {
 
-    public static final String TOOL_NAME = "Zoom To Selection";
+    public static final String TOOL_NAME = "Zoom To Select";
     public static final String TOOL_TIP = "Zoom To Selection";
     public static final String ICON_IMAGE = null;
 

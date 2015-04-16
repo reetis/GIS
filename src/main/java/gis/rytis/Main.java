@@ -26,17 +26,23 @@ public class Main {
         JButton btn;
 
         window.getToolBar().addSeparator();
+
         btn = new JButton(new AddVectorLayerAction(window.getMapPane()));
         window.getToolBar().add(btn);
+
+        window.getToolBar().addSeparator();
 
         btn = new JButton(new SelectAction(window.getMapPane()));
         window.getToolBar().add(btn);
 
+        btn = new JButton(new ZoomToSelectionAction(window.getMapPane()));
+        window.getToolBar().add(btn);
+
+        window.getToolBar().addSeparator();
+
         btn = new JButton(new AttributesWindowAction(window.getMapPane()));
         window.getToolBar().add(btn);
 
-        btn = new JButton(new ZoomToSelectionAction(window.getMapPane()));
-        window.getToolBar().add(btn);
         window.getToolBar().addSeparator();
 
         window.setVisible(true);

@@ -10,7 +10,8 @@ public class SelectAction extends MapAction {
 
     public static final String TOOL_NAME = "Select";
     public static final String TOOL_TIP = "Select one or few features";
-    public static final String ICON_IMAGE = "/org/geotools/swing/icons/pointer.png";
+//    public static final String ICON_IMAGE = "/org/geotools/swing/icons/pointer.png";
+    public static final String ICON_IMAGE = null;
 
     public SelectAction(MapPane mapPane) {
         super.init(mapPane, TOOL_NAME, TOOL_TIP, ICON_IMAGE);
