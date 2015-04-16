@@ -4,6 +4,8 @@ import org.geotools.data.DataAccess;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.map.FeatureLayer;
@@ -16,21 +18,29 @@ import org.geotools.swing.table.FeatureCollectionTableModel;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory2;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class AttributesWindow extends JFrame {
     private JComboBox<String> featureTypeCBox;
     private JComboBox<FeatureLayer> layerCBox;
     private JTable table;
     private JTextField text;
+    private JPanel statusBar;
+    private JLabel statusText;
     private MapPane mapPane;
+
+    private FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
     public AttributesWindow(MapPane mapPane) {
         this.mapPane = mapPane;
@@ -77,14 +87,23 @@ public class AttributesWindow extends JFrame {
 
         dataMenu.add(new SafeAction("Get selected") {
             public void action(ActionEvent e) throws Throwable {
-//                showFeatures();
+                showSelectedFeatures();
             }
         });
         dataMenu.add(new SafeAction("Select on map") {
             public void action(ActionEvent e) throws Throwable {
-//                showFeatures();
+                showSelectedItemsOnMap();
             }
         });
+
+        statusBar = new JPanel();
+        statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        getContentPane().add(statusBar, BorderLayout.SOUTH);
+        statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));
+        statusText = new JLabel("smth");
+        statusText.setHorizontalAlignment(SwingConstants.LEFT);
+        statusBar.add(statusText);
+
         pack();
 
         mapPane.getMapContent().addMapLayerListListener(
@@ -129,18 +148,6 @@ public class AttributesWindow extends JFrame {
         return (FeatureLayer)layerCBox.getSelectedItem();
     }
 
-    private void updateUI() throws Exception {
-        Optional<DataStore> dataStore = getSelectedLayerDataStore();
-        if (!dataStore.isPresent()) {
-            System.out.println("Klaida: Nėra pasirinkta sluoksnio ( updateUI() )");
-            return;
-        }
-        ComboBoxModel<String> cbm = new DefaultComboBoxModel<>(dataStore.get().getTypeNames());
-        featureTypeCBox.setModel(cbm);
-
-        table.setModel(new DefaultTableModel(5, 5));
-    }
-
     public void showFeatures() {
         String typeName = (String) featureTypeCBox.getSelectedItem();
 
@@ -148,6 +155,7 @@ public class AttributesWindow extends JFrame {
         if (!dataStore.isPresent()) {
             System.out.println("Klaida: Nėra pasirinkta sluoksnio ( showFeatures() )");
             table.setModel(new DefaultTableModel());
+            statusText.setText("Count: 0");
             return;
         }
         try {
@@ -156,6 +164,7 @@ public class AttributesWindow extends JFrame {
             SimpleFeatureCollection features = source.getFeatures(filter);
             FeatureCollectionTableModel model = new FeatureCollectionTableModel(features);
             table.setModel(model);
+            statusText.setText("Count: " + features.size());
         } catch (IOException|CQLException e) {
             System.out.println("Klaida: " + e);
         }
@@ -179,6 +188,8 @@ public class AttributesWindow extends JFrame {
         if (!dataStore.isPresent()) {
             System.out.println("Klaida: Nėra pasirinkta sluoksnio ( onLayerChanged() )");
             featureTypeCBox.setModel(new DefaultComboBoxModel<>());
+            table.setModel(new DefaultTableModel());
+            statusText.setText("Count: 0");
             return;
         }
         try {
@@ -187,33 +198,57 @@ public class AttributesWindow extends JFrame {
             System.out.println("Klaida " + e);
         }
 
-        updateTableFromSelection();
+        showFeatures();
     }
 
-    private void updateTableFromSelection() {
-        final SelectableLayer selectableLayer = getSelectableLayer();
-        if (selectableLayer == null) {
+    private void showSelectedFeatures() {
+        Optional<SelectableLayer> selectableLayer = getSelectableLayer();
+        if (!selectableLayer.isPresent()) {
             return;
         }
 
         table.clearSelection();
-        table.setModel(new FeatureCollectionTableModel(selectableLayer.getSelectedFeatures()));
+        SimpleFeatureCollection selectedFeatures = selectableLayer.get().getSelectedFeatures();
+        table.setModel(new FeatureCollectionTableModel(selectedFeatures));
+        statusText.setText("Count: " + selectedFeatures.size());
     }
 
-    private SelectableLayer getSelectableLayer() {
-        final FeatureLayer selectedLayer = getSelectedLayer();
-        if (selectedLayer == null) {
-            return null;
-        }
-        if (! (selectedLayer instanceof SelectableLayer)) {
-            return null;
+    private void showSelectedItemsOnMap() {
+        Optional<SimpleFeatureSource> featureSource = getSelectedFeatureSource();
+        if (!featureSource.isPresent()) {
+            return;
         }
 
-        return (SelectableLayer) selectedLayer;
+        Set<FeatureIdImpl> featureIds = IntStream.of(table.getSelectedRows()).boxed()
+                .map(rowNumber -> (String) table.getValueAt(rowNumber, 0))
+                .map(FeatureIdImpl::new)
+                .collect(Collectors.toSet());
+
+        if (featureIds.isEmpty()) {
+            return;
+        }
+
+        final Filter filter = ff.id(featureIds);
+        try {
+            selectOnMap(featureSource.get().getFeatures(filter));
+        } catch (IOException e) {
+            System.out.println("Failed to select features by filter" + e);
+        }
+    }
+
+    private Optional<SelectableLayer> getSelectableLayer() {
+        final FeatureLayer selectedLayer = getSelectedLayer();
+        if (selectedLayer == null) {
+            return Optional.empty();
+        }
+        if (! (selectedLayer instanceof SelectableLayer)) {
+            return Optional.empty();
+        }
+
+        return Optional.of((SelectableLayer) selectedLayer);
     }
 
     private static class layerCBoxRenderer extends JLabel implements ListCellRenderer<Layer> {
-
         @Override
         public Component getListCellRendererComponent(JList<? extends Layer> list, Layer value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value == null) {
@@ -222,6 +257,29 @@ public class AttributesWindow extends JFrame {
                 setText(value.getTitle());
             }
             return this;
+        }
+    }
+
+    private Optional<SimpleFeatureSource> getSelectedFeatureSource() {
+        String typeName = (String) featureTypeCBox.getSelectedItem();
+        Optional<DataStore> dataStore = getSelectedLayerDataStore();
+
+        if (!dataStore.isPresent()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(dataStore.get().getFeatureSource(typeName));
+        } catch (IOException e) {
+            System.out.println("Failed to find feature source: " + e);
+            return Optional.empty();
+        }
+    }
+
+    private void selectOnMap(SimpleFeatureCollection features) throws IOException {
+        Optional<SelectableLayer> selectableLayer = getSelectableLayer();
+        if (selectableLayer.isPresent()) {
+            selectableLayer.get().newSelection(features);
         }
     }
 }

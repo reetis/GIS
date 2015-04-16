@@ -81,6 +81,11 @@ public class SelectableLayer extends FeatureLayer {
         System.out.println("Current selected features in this layer: " + selectedFeatures.size());
     }
 
+    public void deselectFeatures() {
+        selectedFeatures.clear();
+        updateStyle();
+    }
+
     public SimpleFeatureCollection findFeaturesCrossingBox(Rectangle2D box) {
         GeometryDescriptor geometryDescriptor = featureSource.getSchema().getGeometryDescriptor();
         ReferencedEnvelope bbox = new ReferencedEnvelope(box, geometryDescriptor.getCoordinateReferenceSystem());
