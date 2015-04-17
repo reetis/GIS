@@ -124,11 +124,14 @@ public class SelectableLayer extends FeatureLayer {
     }
 
     private Style createStyle() {
-        selectedRule.setFilter(ff.id(selectedFeatures));
-        defaultRule.setElseFilter(true);
-
         FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle();
-        fts.rules().add(selectedRule);
+
+        if (selectedFeatures.size() > 0) {
+            selectedRule.setFilter(ff.id(selectedFeatures));
+            fts.rules().add(selectedRule);
+        }
+
+        defaultRule.setElseFilter(true);
         fts.rules().add(defaultRule);
 
         Style style = styleFactory.createStyle();
@@ -210,11 +213,14 @@ public class SelectableLayer extends FeatureLayer {
         if (style == null) {
             throw new NullPointerException("Style is required");
         }
+
         if (style.featureTypeStyles().size() == 1) {
             if (style.featureTypeStyles().get(0).rules().size() == 1) {
                 defaultRule = style.featureTypeStyles().get(0).rules().get(0);
-                updateStyle();
-                return;
+                if (selectedFeatures.size() > 0) {
+                    updateStyle();
+                    return;
+                }
             }
         }
 
