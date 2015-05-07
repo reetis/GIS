@@ -145,7 +145,7 @@ public class AreaStatsAction extends MapAction {
                         Geometry areaGeometry = (Geometry) ((SimpleFeature) area).getDefaultGeometry();
                         Geometry intersected = squareRegion.intersection(areaGeometry);
                         double intersectedArea = intersected.getArea();
-                        switch (getAreaType((SimpleFeature) area)) {
+                        switch (Utilities.getAreaType((SimpleFeature) area)) {
                             case GARDEN:
                                 gardensArea.add(intersectedArea);
                                 break;
@@ -173,31 +173,6 @@ public class AreaStatsAction extends MapAction {
         System.out.println("Finished: " + regionName);
         return new CalculationResult(regionName, regionGeometry.getArea(), hydroArea.doubleValue(), forestsArea.doubleValue(),
                 buildingsArea.doubleValue(), gardensArea.doubleValue());
-    }
-
-    private AreaType getAreaType(SimpleFeature area) {
-        String gkodas = (String) area.getAttribute("GKODAS");
-        switch (gkodas) {
-            case "hd1":
-            case "hd2":
-            case "hd9":
-            case "hd3":
-            case "hd4":
-            case "hd5":
-                return AreaType.HYDRO;
-            case "ms0":
-                return AreaType.FOREST;
-            case "ms4":
-                return AreaType.GARDEN;
-            case "pu0":
-                return AreaType.BUILDING;
-            default:
-                return AreaType.UNKNOWN;
-        }
-    }
-
-    private enum AreaType{
-        HYDRO, FOREST, BUILDING, GARDEN, UNKNOWN
     }
 
     private class CalculationResult{
