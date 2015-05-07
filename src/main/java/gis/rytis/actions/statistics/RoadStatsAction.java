@@ -22,8 +22,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.DoubleAdder;
 
 import static java.lang.Math.abs;
@@ -71,19 +74,33 @@ public class RoadStatsAction extends MapAction {
         CoordinateReferenceSystem crs = regionLayer.getSimpleFeatureSource().getSchema().getCoordinateReferenceSystem();
 
         try {
+            List<CompletableFuture<CalculationResult>> resultsFutures = new ArrayList<>();
             SimpleFeatureCollection features = regionLayer.getSimpleFeatureSource().getFeatures();
             SimpleFeatureIterator featureIterator = features.features();
             while (featureIterator.hasNext()) {
                 SimpleFeature feature = featureIterator.next();
-                CompletableFuture completableFuture = CompletableFuture.supplyAsync(() -> calculate(feature, roadLayer, crs));
-//                calculate(feature, roadLayer);
+                resultsFutures.add(CompletableFuture.supplyAsync(() -> calculate(feature, roadLayer, crs)));
             }
-        } catch (IOException e1) {
+            List<CalculationResult> results = new ArrayList<>();
+            for (CompletableFuture<CalculationResult> future: resultsFutures) {
+                results.add(future.get());
+            }
+
+            results.sort((x, y) -> x.getRegionName().compareToIgnoreCase(y.getRegionName()));
+
+            for (CalculationResult result: results) {
+                System.out.println(result.getRegionName() + " -> Plotas: " + result.getRegionArea() +
+                        " m^2; Kelių ilgis: " + result.getRoadsLength() +
+                        " m; Kelių tankis: " + result.getRoadsDensity() );
+            }
+        } catch (IOException|InterruptedException|ExecutionException e1) {
             e1.printStackTrace();
         }
+
+
     }
 
-    public boolean calculate(SimpleFeature region, FeatureLayer roadLayer, CoordinateReferenceSystem crs) {
+    public CalculationResult calculate(SimpleFeature region, FeatureLayer roadLayer, CoordinateReferenceSystem crs) {
         String regionName = (String) region.getAttribute("SAV");
         System.out.println("Starting " + regionName);
 
@@ -128,6 +145,46 @@ public class RoadStatsAction extends MapAction {
         }
 
         System.out.println(regionName + ": " + roadLength);
-        return true;
+        return new CalculationResult(regionName, regionGeometry.getArea(), roadLength.doubleValue());
+    }
+
+    private class CalculationResult{
+        private String regionName;
+        private double regionArea;
+        private double roadsLength;
+
+        public CalculationResult(String regionName, double regionArea, double roadsLength) {
+            this.regionName = regionName;
+            this.regionArea = regionArea;
+            this.roadsLength = roadsLength;
+        }
+
+        public double getRoadsDensity() {
+            return roadsLength/regionArea;
+        }
+
+        public String getRegionName() {
+            return regionName;
+        }
+
+        public void setRegionName(String regionName) {
+            this.regionName = regionName;
+        }
+
+        public double getRegionArea() {
+            return regionArea;
+        }
+
+        public void setRegionArea(double regionArea) {
+            this.regionArea = regionArea;
+        }
+
+        public double getRoadsLength() {
+            return roadsLength;
+        }
+
+        public void setRoadsLength(double roadsLength) {
+            this.roadsLength = roadsLength;
+        }
     }
 }
