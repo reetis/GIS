@@ -4,6 +4,9 @@ import gis.rytis.actions.AddVectorLayerAction;
 import gis.rytis.actions.AttributesWindowAction;
 import gis.rytis.actions.SelectAction;
 import gis.rytis.actions.ZoomToSelectionAction;
+import gis.rytis.actions.statistics.AreaStatsAction;
+import gis.rytis.actions.statistics.BuildingStatsAction;
+import gis.rytis.actions.statistics.RoadStatsAction;
 import org.geotools.map.MapContent;
 import org.geotools.swing.JMapFrame;
 
@@ -23,27 +26,25 @@ public class Main {
         window.setMapContent(map);
         window.setTitle("GIS");
 
-        JButton btn;
+        window.getToolBar().addSeparator();
+
+        window.getToolBar().add(new AddVectorLayerAction(window.getMapPane()));
 
         window.getToolBar().addSeparator();
 
-        btn = new JButton(new AddVectorLayerAction(window.getMapPane()));
-        window.getToolBar().add(btn);
+        window.getToolBar().add(new SelectAction(window.getMapPane()));
+        window.getToolBar().add(new ZoomToSelectionAction(window.getMapPane()));
 
         window.getToolBar().addSeparator();
 
-        btn = new JButton(new SelectAction(window.getMapPane()));
-        window.getToolBar().add(btn);
-
-        btn = new JButton(new ZoomToSelectionAction(window.getMapPane()));
-        window.getToolBar().add(btn);
+        window.getToolBar().add(new AttributesWindowAction(window.getMapPane()));
 
         window.getToolBar().addSeparator();
 
-        btn = new JButton(new AttributesWindowAction(window.getMapPane()));
-        window.getToolBar().add(btn);
-
-        window.getToolBar().addSeparator();
+        window.getToolBar().add((new JLabel("Statistics: ")));
+        window.getToolBar().add(new RoadStatsAction(window.getMapPane()));
+        window.getToolBar().add(new AreaStatsAction(window.getMapPane()));
+        window.getToolBar().add(new BuildingStatsAction(window.getMapPane()));
 
         window.setVisible(true);
     }

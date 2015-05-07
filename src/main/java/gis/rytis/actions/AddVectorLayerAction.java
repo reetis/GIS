@@ -57,6 +57,7 @@ public class AddVectorLayerAction extends MapAction {
 
                 Layer layer = new SelectableLayer(layerTitle, featureSource, colors[colorIter%colors.length], colors[colorIter%colors.length].brighter());
                 colorIter++;
+                layer.setVisible(false);
                 getMapPane().getMapContent().addLayer(layer);
             }
 
