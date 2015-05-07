@@ -67,7 +67,7 @@ public class RoadStatsAction extends MapAction {
             return;
         }
         if (Utilities.getLayerType(roadLayer) != Utilities.LayerType.LINE) {
-            JOptionPane.showMessageDialog(null, "Region layer (SAV_P) geometry is not lines");
+            JOptionPane.showMessageDialog(null, "Region layer (KEL_L) geometry is not lines");
             return;
         }
 
@@ -88,10 +88,11 @@ public class RoadStatsAction extends MapAction {
 
             results.sort((x, y) -> x.getRegionName().compareToIgnoreCase(y.getRegionName()));
 
+            //TODO: Pakeisti į normalų rezultatų atvaizdavimą
             for (CalculationResult result: results) {
                 System.out.println(result.getRegionName() + " -> Plotas: " + result.getRegionArea() +
                         " m^2; Kelių ilgis: " + result.getRoadsLength() +
-                        " m; Kelių tankis: " + result.getRoadsDensity() );
+                        " m; Kelių tankis: " + (result.getRoadsDensity() * 1000000) + "m/km^2");
             }
         } catch (IOException|InterruptedException|ExecutionException e1) {
             e1.printStackTrace();
@@ -115,11 +116,11 @@ public class RoadStatsAction extends MapAction {
                 new ReferencedEnvelope(envInt.getMinX(), envInt.getMaxX()+10, envInt.getMinY(), envInt.getMaxY()+10, crs),
                 cellWidth, cellHeight, new DefaultGridFeatureBuilder());
 
-        try {
-            System.out.println(regionName + ": " + squareGrid.getFeatures().size() + " kvadratai");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            System.out.println(regionName + ": " + squareGrid.getFeatures().size() + " kvadratai");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         try {
             squareGrid.getFeatures().accepts(square -> {
@@ -144,7 +145,7 @@ public class RoadStatsAction extends MapAction {
             e.printStackTrace();
         }
 
-        System.out.println(regionName + ": " + roadLength);
+        System.out.println("Finished " + regionName);
         return new CalculationResult(regionName, regionGeometry.getArea(), roadLength.doubleValue());
     }
 
