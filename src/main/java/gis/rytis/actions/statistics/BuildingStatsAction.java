@@ -116,7 +116,7 @@ public class BuildingStatsAction extends MapAction {
             }
 
             JFrame frame = new JFrame("Buildings statistics");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
             //Create and set up the content pane.
             ResultWindow newContentPane = new ResultWindow(results);
