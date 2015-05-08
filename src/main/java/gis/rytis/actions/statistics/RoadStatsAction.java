@@ -20,6 +20,7 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,12 +89,24 @@ public class RoadStatsAction extends MapAction {
 
             results.sort((x, y) -> x.getRegionName().compareToIgnoreCase(y.getRegionName()));
 
-            //TODO: Pakeisti į normalų rezultatų atvaizdavimą
             for (CalculationResult result: results) {
                 System.out.println(result.getRegionName() + " -> Plotas: " + result.getRegionArea() +
                         " m^2; Kelių ilgis: " + result.getRoadsLength() +
                         " m; Kelių tankis: " + (result.getRoadsDensity() * 1000000) + "m/km^2");
             }
+
+            JFrame frame = new JFrame("Road statistics");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            //Create and set up the content pane.
+            ResultWindow newContentPane = new ResultWindow(results);
+            newContentPane.setOpaque(true); //content panes must be opaque
+            frame.setContentPane(newContentPane);
+
+            //Display the window.
+            frame.pack();
+            frame.setVisible(true);
+
         } catch (IOException|InterruptedException|ExecutionException e1) {
             e1.printStackTrace();
         }
@@ -127,8 +140,7 @@ public class RoadStatsAction extends MapAction {
                 Geometry squareGeometry = (Geometry) (((SimpleFeature) square).getDefaultGeometry());
                 Geometry squareRegion = regionGeometry.intersection(squareGeometry);
 
-                Filter filter = ff.and(ff.intersects(ff.property(roadsGeomLocalName), ff.literal(squareRegion)),
-                        ff.intersects(ff.property(roadsGeomLocalName), ff.literal(squareGeometry)));
+                Filter filter = ff.intersects(ff.property(roadsGeomLocalName), ff.literal(squareGeometry));
 
                 try {
                     roadLayer.getSimpleFeatureSource().getFeatures(filter).accepts(road -> {
@@ -186,6 +198,28 @@ public class RoadStatsAction extends MapAction {
 
         public void setRoadsLength(double roadsLength) {
             this.roadsLength = roadsLength;
+        }
+    }
+
+    private class ResultWindow extends JPanel {
+        public ResultWindow(List<CalculationResult> results) {
+            super(new GridLayout(1, 0));
+            String[] columnNames = {"Region Name", "Region Area (m^2)", "Roads length (m)", "Roads density (m/km^2)"};
+            String[][] data = new String[results.size()][4];
+            for (int i = 0; i < results.size(); ++i) {
+                data[i][0] = results.get(i).getRegionName();
+                data[i][1] = String.format("%f", results.get(i).getRegionArea());
+                data[i][2] = String.format("%f", results.get(i).getRoadsLength());
+                data[i][3] = String.format("%f", results.get(i).getRoadsDensity()*1000000);
+            }
+            final JTable table = new JTable(data, columnNames);
+            table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+            table.setFillsViewportHeight(true);
+            //Create the scroll pane and add the table to it.
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            //Add the scroll pane to this panel.
+            add(scrollPane);
         }
     }
 }

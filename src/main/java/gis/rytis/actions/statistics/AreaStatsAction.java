@@ -20,6 +20,7 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,7 +89,6 @@ public class AreaStatsAction extends MapAction {
 
             results.sort((x, y) -> x.getRegionName().compareToIgnoreCase(y.getRegionName()));
 
-            //TODO: Pakeisti į normalų rezultatų atvaizdavimą
             for (CalculationResult result: results) {
                 System.out.println("-- " + result.getRegionName() + " (" + result.getRegionArea() + " m^2): ");
                 System.out.println("Hidrografijos teritorija: " + result.getHydroArea() + " m^2 (" +
@@ -100,6 +100,18 @@ public class AreaStatsAction extends MapAction {
                 System.out.println("Pramoniniai sodai: " + result.getGardenArea() + " m^2 (" +
                                     result.getGardenPercentage() + " %)");
             }
+
+            JFrame frame = new JFrame("Area statistics");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            //Create and set up the content pane.
+            ResultWindow newContentPane = new ResultWindow(results);
+            newContentPane.setOpaque(true); //content panes must be opaque
+            frame.setContentPane(newContentPane);
+
+            //Display the window.
+            frame.pack();
+            frame.setVisible(true);
         } catch (IOException |InterruptedException|ExecutionException e1) {
             e1.printStackTrace();
         }
@@ -137,8 +149,7 @@ public class AreaStatsAction extends MapAction {
                 Geometry squareGeometry = (Geometry) (((SimpleFeature) square).getDefaultGeometry());
                 Geometry squareRegion = regionGeometry.intersection(squareGeometry);
 
-                Filter filter = ff.and(ff.intersects(ff.property(areaGeomLocalName), ff.literal(squareRegion)),
-                        ff.intersects(ff.property(areaGeomLocalName), ff.literal(squareGeometry)));
+                Filter filter = ff.intersects(ff.property(areaGeomLocalName), ff.literal(squareGeometry));
 
                 try {
                     areaLayer.getSimpleFeatureSource().getFeatures(filter).accepts(area -> {
@@ -254,6 +265,37 @@ public class AreaStatsAction extends MapAction {
 
         public double getGardenPercentage() {
             return gardenArea/regionArea*100;
+        }
+    }
+
+    private class ResultWindow extends JPanel {
+        public ResultWindow(List<CalculationResult> results) {
+            super(new GridLayout(1, 0));
+            String[] columnNames = {"Region Name", "Region Area (m^2)", "Hydro Area (m^2)", "Hydro Percentage",
+                                            "Forest Area (m^2)", "Forest Percentage",
+                                            "Built Area (m^2)", "Built Percentage",
+                                            "Garden Area (m^2)", "Garden Percentage"};
+            String[][] data = new String[results.size()][10];
+            for (int i = 0; i < results.size(); ++i) {
+                data[i][0] = results.get(i).getRegionName();
+                data[i][1] = String.format("%f", results.get(i).getRegionArea());
+                data[i][2] = String.format("%f", results.get(i).getHydroArea());
+                data[i][3] = String.format("%.3f %%", results.get(i).getHydroPercentage());
+                data[i][4] = String.format("%f", results.get(i).getForestArea());
+                data[i][5] = String.format("%.3f %%", results.get(i).getForestPercentage());
+                data[i][6] = String.format("%f", results.get(i).getBuildingArea());
+                data[i][7] = String.format("%.3f %%", results.get(i).getBuildingPercentage());
+                data[i][8] = String.format("%f", results.get(i).getGardenArea());
+                data[i][9] = String.format("%.3f %%", results.get(i).getGardenPercentage());
+            }
+            final JTable table = new JTable(data, columnNames);
+            table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+            table.setFillsViewportHeight(true);
+            //Create the scroll pane and add the table to it.
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            //Add the scroll pane to this panel.
+            add(scrollPane);
         }
     }
 }
