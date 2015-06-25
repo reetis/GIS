@@ -12,7 +12,7 @@
 
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<geotools.version>9.0</geotools.version>
+		<geotools.version>13.0</geotools.version>
   </properties>
 
   <dependencies>
@@ -22,16 +22,16 @@
 		  <version>4.11</version>
 		  <scope>test</scope>
 		</dependency>
-		<dependency>
-		  <groupId>org.geotools</groupId>
-		  <artifactId>gt-shapefile</artifactId>
-		  <version>${geotools.version}</version>
-		</dependency>
-        <!--<dependency>-->
-          <!--<groupId>org.geotools</groupId>-->
-          <!--<artifactId>gt-shapefile-old</artifactId>-->
-          <!--<version>11.5</version>-->
-        <!--</dependency>-->
+		<!--<dependency>-->
+		  <!--<groupId>org.geotools</groupId>-->
+		  <!--<artifactId>gt-shapefile</artifactId>-->
+		  <!--<version>${geotools.version}</version>-->
+		<!--</dependency>-->
+        <dependency>
+          <groupId>org.geotools</groupId>
+          <artifactId>gt-shapefile-old</artifactId>
+          <version>11.5</version>
+        </dependency>
 		<dependency>
 		  <groupId>org.geotools</groupId>
 		  <artifactId>gt-swing</artifactId>
